@@ -8,4 +8,6 @@ public interface IPaySlipService {
     PaySlip createPaySlip(CreatePaySlipRequest createPaySlipRequest);
     Page<PaySlip> getPaySlips(int page,int size);
     Page<PaySlip> getPaySlipsInTimeRange(int page,int size,int  month,Long year);
+
+    Page<PaySlip> approvePaySlips(int page, int size,int month,Long year);
 }

@@ -36,7 +36,8 @@ public class SecurityConfig {
                                 "/api/v1/user/admin/create",
                                 "/api/v1/user/manager/create",
                                 "/api/v1/user/me",
-                                "/api/v1/employment/**")
+                                "/api/v1/employment/**",
+                                "/api/v1/pay-slip/**")
                                 .authenticated()
                                 .anyRequest()
                                 .permitAll()
