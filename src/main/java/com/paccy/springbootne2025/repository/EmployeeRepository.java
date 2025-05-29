@@ -1,7 +1,7 @@
 package com.paccy.springbootne2025.repository;
 
 
-import com.paccy.springbootne2025.entities.User;
+import com.paccy.springbootne2025.entities.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,7 +10,9 @@ import java.util.UUID;
 
 
 @Repository
-public interface UserRepository extends JpaRepository<User, UUID> {
+public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
 
-    Optional<User> findByEmail(String email);
+    Optional<Employee> findByEmail(String email);
+
+    Optional<Employee> findByCode(Long code);
 }

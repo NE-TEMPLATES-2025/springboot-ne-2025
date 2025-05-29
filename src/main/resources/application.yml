@@ -26,6 +26,11 @@ spring:
     restart:
       enabled: true
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
 server:
   port: 8000
 
@@ -34,9 +39,6 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui
-
-
-
 
 jwt:
   secretKey: ${JWT_SECRET_KEY}

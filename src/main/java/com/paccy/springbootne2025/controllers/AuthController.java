@@ -25,30 +25,4 @@ public class AuthController {
     }
 
 
-//    @PutMapping("/initiate-account-verification")
-//    public ResponseEntity<ApiResponse<Object>> sendAccountVerificationRequest(
-//            @RequestBody @Valid InitiateAccountVerificationRequest accountVerificationRequest
-//    ){
-//        authService.initiateAccountVerification(accountVerificationRequest);
-//        return new ApiResponse<>("Account Activation Email sent successfully,expiring in 6 hours",HttpStatus.OK,null).toResponseEntity();
-//    }
-//
-//    @PutMapping("/verify-account/{verificationCode}")
-//    public ResponseEntity<ApiResponse<Object>> verifyAccount(
-//            @PathVariable String verificationCode
-//    ){
-//        authService.verifyAccount(verificationCode);
-//        return new ApiResponse<>("Account Verification completed successfully",HttpStatus.OK,null).toResponseEntity();
-//    }
-//
-//
-//    @PutMapping("/reset-password")
-//    public ResponseEntity<ApiResponse<Object>> resetPassword(
-//            @RequestBody @Valid ResetPasswordRequest request
-//    ){
-//        authService.resetPassword(request.getEmail(),request.getVerificationCode(),request.getNewPassword());
-//        return new ApiResponse<>("Password Reset successfully",HttpStatus.OK,null).toResponseEntity();
-//    }
-//
-
 }

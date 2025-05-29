@@ -1,7 +1,7 @@
 package com.paccy.springbootne2025.response;
 
 
-import com.paccy.springbootne2025.entities.User;
+import com.paccy.springbootne2025.entities.Employee;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +12,7 @@ import lombok.Setter;
 public class AuthResponse {
 
     private String token;
-    private User user;
+    private Employee employee;
 
 
 }

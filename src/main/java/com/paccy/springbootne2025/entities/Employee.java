@@ -1,28 +1,35 @@
 package com.paccy.springbootne2025.entities;
 
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.paccy.springbootne2025.enums.ERole;
+import com.paccy.springbootne2025.enums.EmployeeStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
+
 @Entity
-@Table(name = "users")
+@Table(name = "employee")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User  implements UserDetails {
+public class Employee implements UserDetails {
+
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long code;
+
 
     @Column(nullable = false,name = "first_name")
     private String firstName;
@@ -33,26 +40,32 @@ public class User  implements UserDetails {
     @Column(nullable = false,name = "email",unique = true)
     private String email;
 
-    @Column(nullable = false,name = "phone_number")
-    private String phoneNumber;
-
-    @Column(nullable = false,name = "national_id")
-    private Long nationalId;
-
     @Column(nullable = false,name = "password")
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_user_roles",
-    joinColumns = @JoinColumn(name = "user_id"),
-    inverseJoinColumns = @JoinColumn(name = "id")
-    )
-    private List<Role> roles;
+    private ERole roles;
+
+    @Column(nullable = false,name = "mobile")
+    private String mobile;
+
+    @Column(unique = true)
+    private LocalDate dob;
+    private EmployeeStatus employeeStatus;
+
+
+    @OneToMany(mappedBy = "employee",cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Employment> employments;
+
+    @OneToMany(mappedBy = "employee",cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<PaySlip> paySlips;
+
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return getUserRoles();
+        return List.of(new SimpleGrantedAuthority("ROLE_" +roles.name()));
     }
 
     @Override
@@ -88,10 +101,4 @@ public class User  implements UserDetails {
 
 
 
-
-    public List<GrantedAuthority> getUserRoles(){
-        return this.roles.stream().map(
-                role -> new SimpleGrantedAuthority(role.getName().toString())
-        ).collect(Collectors.toList());
-    }
 }

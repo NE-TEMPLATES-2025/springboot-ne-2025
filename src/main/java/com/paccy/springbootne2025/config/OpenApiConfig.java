@@ -18,8 +18,8 @@ public class OpenApiConfig {
         final String securitySchemeName = "bearerAuth";
         return new OpenAPI().info(
                 new Info()
-                        .title("RRA VMS API")
-                        .description("Rwanda Revenue Authority Vehicle Management System APIs")
+                        .title("Spring Boot NE 2025 API")
+                        .description("Spring Boot NE 2025 APIs")
 
         ).addSecurityItem(new SecurityRequirement()
                         .addList(securitySchemeName))
@@ -34,7 +34,7 @@ public class OpenApiConfig {
                 ))
                 .externalDocs(
                 new ExternalDocumentation()
-                        .description("Rwanda Revenue Authority Management System APIs")
+                        .description("Spring Boot NE 2025 APIs")
 
         );
     }
