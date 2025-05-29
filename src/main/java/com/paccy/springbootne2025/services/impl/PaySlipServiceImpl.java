@@ -31,66 +31,73 @@ public class PaySlipServiceImpl implements IPaySlipService {
     private final DeductionRepository deductionRepository;
     private final EmployeeRepository employeeRepository;
     @Override
+
     public PaySlip createPaySlip(CreatePaySlipRequest createPaySlipRequest) {
-//        Find the deductions by name;
-        Deduction employeeTaxDeduction = deductionRepository.findByName("EmployeeTax");
-        Deduction transportDeduction= deductionRepository.findByName("Transport");
-        Deduction pensionDeduction=deductionRepository.findByName("Pension");
-        Deduction medicalInsuranceDeduction=deductionRepository.findByName("MedicalInsurance");
-        Deduction housingDeduction=deductionRepository.findByName("Housing");
-        Deduction otherDeduction=deductionRepository.findByName("Others");
-
-//        Getting the employment
-        Optional<Employee> employee= employeeRepository.findByCode(createPaySlipRequest.employeeId());
-        if(employee.isPresent()){
-            Optional<Employment> existingEmployment= employmentRepository.findByEmployee(employee);
-            if (existingEmployment.isEmpty()){
-                throw  new RuntimeException("employment not found");
-            }
-            Double employmentBaseSalary=existingEmployment.get().getBaseSalary();
-//        //Get the cost of each deduction
-
-            Double employeeTaxCost= (employeeTaxDeduction.getPercentage() /100) * employmentBaseSalary;
-            Double transportCost= (transportDeduction.getPercentage() /100) * employmentBaseSalary;
-            Double pensionCost= (pensionDeduction.getPercentage() /100) * employmentBaseSalary;
-            Double medicalInsuranceCost= (medicalInsuranceDeduction.getPercentage() /100) * employmentBaseSalary;
-            Double housingCost= (housingDeduction.getPercentage() / 100) * employmentBaseSalary;
-            Double othersCost= (otherDeduction.getPercentage() / 100) * employmentBaseSalary;
-
-//            Calculate the Gross salary
-            Double grossSalary= employmentBaseSalary + (employeeTaxCost + transportCost + pensionCost+ medicalInsuranceCost + housingCost + othersCost);
-//            Calculate the net Salary
-            Double taxedMoney= employeeTaxCost + transportCost + pensionCost+ medicalInsuranceCost + housingCost + othersCost;
-            Double netSalary= grossSalary - taxedMoney;
-
-//            Go ahead and create the payslip
-
-            PaySlip paySlip = PaySlip
-                    .builder()
-                    .employee(employee.get())
-                    .transportAmount(transportCost)
-                    .pensionAmount(pensionCost)
-                    .medicalInsuranceAmount(medicalInsuranceCost)
-                    .otherTaxedAmount(othersCost)
-                    .netSalary(netSalary)
-                    .grossSalary(grossSalary)
-                    .paySlipStatus(PaySlipStatus.PENDING)
-                    .month(createPaySlipRequest.month())
-                    .year(createPaySlipRequest.year())
-                    .houseAmount(housingCost)
-                    .employeeTaxedAmount(employeeTaxCost)
-                    .build();
-
-
-            return  paySlipRepository.save(paySlip);
-
-        }
-        else {
-            throw  new RuntimeException("employee not found");
+        // Get employee by ID
+        Optional<Employee> employeeOpt = employeeRepository.findByCode(createPaySlipRequest.employeeId());
+        if (employeeOpt.isEmpty()) {
+            throw new RuntimeException("Employee not found");
         }
 
+        Employee employee = employeeOpt.get();
 
+        // Get employment
+        Optional<Employment> employmentOpt = employmentRepository.findByEmployee(Optional.of(employee));
+        if (employmentOpt.isEmpty()) {
+            throw new RuntimeException("Employment not found for employee");
+        }
+        Employment employment = employmentOpt.get();
+        Double baseSalary = employment.getBaseSalary();
+        if (baseSalary == null) {
+            throw new RuntimeException("Base salary is null");
+        }
+
+        // Fetch deductions safely
+        Deduction employeeTaxDeduction = deductionRepository.findByName("EmployeeTax")
+                .orElseThrow(() -> new RuntimeException("EmployeeTax deduction not found"));
+        Deduction transportDeduction = deductionRepository.findByName("Transport")
+                .orElseThrow(() -> new RuntimeException("Transport deduction not found"));
+        Deduction pensionDeduction = deductionRepository.findByName("Pension")
+                .orElseThrow(() -> new RuntimeException("Pension deduction not found"));
+        Deduction medicalInsuranceDeduction = deductionRepository.findByName("MedicalInsurance")
+                .orElseThrow(() -> new RuntimeException("MedicalInsurance deduction not found"));
+        Deduction housingDeduction = deductionRepository.findByName("Housing")
+                .orElseThrow(() -> new RuntimeException("Housing deduction not found"));
+        Deduction otherDeduction = deductionRepository.findByName("Others")
+                .orElseThrow(() -> new RuntimeException("Others deduction not found"));
+
+        double employeeTaxCost = ((double) employeeTaxDeduction.getPercentage() / 100) * baseSalary;
+        double transportCost = ((double) transportDeduction.getPercentage() / 100) * baseSalary;
+        double pensionCost = ((double) pensionDeduction.getPercentage() / 100) * baseSalary;
+        double medicalInsuranceCost = ((double) medicalInsuranceDeduction.getPercentage() / 100) * baseSalary;
+        double housingCost = ((double) housingDeduction.getPercentage() / 100) * baseSalary;
+        double othersCost = ((double) otherDeduction.getPercentage() / 100) * baseSalary;
+
+        //  gross and net salary
+        double totalDeductions = employeeTaxCost + transportCost + pensionCost
+                + medicalInsuranceCost + housingCost + othersCost;
+        double grossSalary = baseSalary + totalDeductions;
+        double netSalary = grossSalary - totalDeductions;
+
+        // Build and save the payslip
+        PaySlip paySlip = PaySlip.builder()
+                .employee(employee)
+                .transportAmount(transportCost)
+                .pensionAmount(pensionCost)
+                .medicalInsuranceAmount(medicalInsuranceCost)
+                .otherTaxedAmount(othersCost)
+                .netSalary(netSalary)
+                .grossSalary(grossSalary)
+                .paySlipStatus(PaySlipStatus.PENDING)
+                .month(createPaySlipRequest.month())
+                .year(createPaySlipRequest.year())
+                .houseAmount(housingCost)
+                .employeeTaxedAmount(employeeTaxCost)
+                .build();
+
+        return paySlipRepository.save(paySlip);
     }
+
 
     @Override
     public Page<PaySlip> getPaySlips(int page, int size) {
@@ -100,6 +107,24 @@ public class PaySlipServiceImpl implements IPaySlipService {
 
     @Override
     public Page<PaySlip> getPaySlipsInTimeRange(int page, int size, int month, Long year) {
-        return null;
+        Pageable pageable = PageRequest.of(page, size);
+        return  paySlipRepository.findByYearAndMonth(year, month, pageable);
     }
+
+    @Override
+    public Page<PaySlip> approvePaySlips(int page, int size, int month, Long year) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<PaySlip> paySlipsPage = paySlipRepository.findByYearAndMonth(year, month, pageable);
+
+        // Update each PaySlip to PAID
+        paySlipsPage.getContent().forEach(paySlip -> {
+            paySlip.setPaySlipStatus(PaySlipStatus.PAID);
+        });
+
+        // Save all updated payslips
+        paySlipRepository.saveAll(paySlipsPage.getContent());
+
+        return paySlipsPage;
+    }
+
 }
